@@ -10,6 +10,7 @@ body {
     line-height: 1.6;   /* unitless meaning 1.6 times the font size */
     color: #1a1a1a;
     background: #ffffff;
+    font-size: 1.0625rem;   /* 17px */
 }
 
 /* The Container: */
@@ -23,6 +24,10 @@ main,
     padding-right: 32px;
 }
 
+/* Narrow: for reading */
+.prose {
+    max-width: 120ch;
+}
 
 
 .site-header {
