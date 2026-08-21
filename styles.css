@@ -75,6 +75,10 @@ h2 {
 
 p {
     margin-bottom: 16px;
+    /* Latex-like wrap: */
+    /* text-align: justify;
+    hyphens: auto;
+    */
 }
 
 
@@ -99,6 +103,47 @@ main section {
 }
 
 
+/* Responsive: phones & small screens
+   Rules in here only apply when the viewport is <700px */
+@media (max-width: 700px) {
+    /*
+    .site-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 12px;
+    }
+    */
+
+    .site-nav {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 20px;
+    }
+
+    .site-nav a {
+        margin-left: 0;
+    }
+
+    .site-header,
+    main,
+    .site-footer {
+        padding-left: 20px;
+        padding-right: 20px;
+    }
+
+    h1 {
+        font-size: 2rem;
+    }
+
+    main section {
+        margin-bottom: 36px;
+    }
+
+    p {
+        text-align: justify;
+        hyphens: auto;
+    }
+}
 
 
 
