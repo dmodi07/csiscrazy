@@ -1,0 +1,182 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>My database had money that no transaction created - Dipen Modi</title>
+        <meta name="description" content="An account held $50 and the ledger had no record of anyone putting it there. What that taught me about invariants.">
+        <link rel="stylesheet" href="/styles.css">
+    </head>
+
+    <body>
+        <header class="site-header">
+            <a class="wordmark" href="/">Dipen Modi</a>
+            <nav class="site-nav">
+                <a href="/">About</a>
+                <a href="/projects/">Projects</a>
+                <a href="/blog/">Blog</a>
+            </nav>
+        </header>
+
+        <main>
+            <article class="post prose">
+                <header class="post-header">
+                    <p class="post-date"><time datetime="2026-08-20">20 August 2026</time></p>
+                    <h1>My database had money that no transaction created</h1>
+                </header>
+
+                <p>I had just finished migrating my banking project from a JSON file to PostgreSQL. Eighteen accounts, all of them fictional villains from the movie Despicable Me, moved across without a single error. I ran a query to spot-check the result and got this:</p>
+
+                <pre><code>                  username   | balance_cents
+                -------------+---------------
+                 test_user   |          5000
+                 BadBoy      |             0
+                 MrScientist |          5000</code></pre>
+
+                <p><code>test_user</code> had fifty dollars, which was right.
+                <code>BadBoy</code> had nothing, which was right.
+                <code>MrScientist</code> had fifty dollars, and I had never touched that
+                account.</p>
+
+                <h2>The thing that made it interesting</h2>
+
+                <p>A few days earlier I had added a transaction ledger to the project. Every
+                deposit and withdrawal appends a row recording what happened, how much, and
+                what the balance became. The idea is that the balance is a claim and the
+                ledger is the evidence.</p>
+
+                <p>So I asked the ledger where the fifty dollars came from:</p>
+
+                <pre><code>                SELECT t.type, t.amount_cents, t.created_at
+                FROM transactions t
+                JOIN accounts a ON a.id = t.account_id
+                WHERE a.username = 'MrScientist';</code></pre>
+
+                <pre><code>                 type | amount_cents | created_at
+                ------+--------------+------------
+                (0 rows)</code></pre>
+
+                <p>Nothing. Fifty dollars sitting in an account, and no record of anyone
+                putting it there.</p>
+
+                <h2>Working out what happened</h2>
+
+                <p>There were three possibilities and only one of them meant my code was
+                fine.</p>
+
+                <p>The migration reads <code>clients.json</code> and writes rows into
+                Postgres. So either the source file already had this problem, or the
+                migration created it. I checked the source:</p>
+
+                <pre><code>{'username': 'MrScientist', 'name': 'Norman Osborn', 'account_number': 'BE015', 'balance': 50.0, 'transactions': []}</code></pre>
+
+                <p>Fifty dollars, empty transaction list. The migration had copied exactly
+                what it was given. My code was not the problem.</p>
+
+                <p>What actually happened is that at some point during development, before
+                the <code>Transaction</code> class existed, I ran the terminal app and
+                deposited fifty dollars into that account to check that deposits worked. The
+                balance moved. Nothing recorded it, because at that moment nothing
+                <em>could</em> record it. Then every subsequent migration carried that
+                orphaned balance forward, faithfully, into the new system.</p>
+
+                <p>The bug was not in the migration. It was in the data, and it predated the
+                feature that would have caught it.</p>
+
+                <h2>Why this is worth writing about</h2>
+
+                <p>The temptation was to run one <code>UPDATE</code>, set the balance to
+                zero, and forget about it. I did run that update, because I had endpoints to
+                finish. But the principle underneath is one I had not properly understood
+                until I hit it.</p>
+
+                <p>I had been thinking of the ledger as a <em>feature</em> — something users
+                can look at, a statement screen. It is not primarily that. It is an
+                <strong>invariant</strong>:</p>
+
+                <blockquote>
+                    <p>Every cent in a balance should be explained by the ledger.</p>
+                </blockquote>
+
+                <p>Once you state it that way, the account with fifty unexplained dollars is
+                not a cosmetic problem. It is a violation of the property that makes the
+                system trustworthy. And a system that quietly tolerates one violation will
+                tolerate others, because nothing is checking.</p>
+
+                <h2>What a real migration does</h2>
+
+                <p>The correct fix is not to zero the balance. Zeroing it destroys
+                information — that fifty dollars might have been real, and in a production
+                system it certainly would be. You cannot make history correct by deleting
+                it.</p>
+
+                <p>What real financial systems do when moving data between platforms is
+                create an <strong>opening balance</strong> entry: a synthetic transaction,
+                dated at the moment of migration, that says <em>this account started here,
+                prior history unavailable</em>. It does not pretend to know what happened
+                before. It just makes the ledger complete going forward, so the invariant
+                holds from that point on.</p>
+
+                <p>For my project that means the migration script should do something
+                like:</p>
+
+                <pre><code>if balance_cents &gt; 0 and not transactions:
+                    insert_transaction(
+                        type="opening_balance",
+                        amount_cents=balance_cents,
+                        balance_after_cents=balance_cents,
+                        created_at=migration_time,
+                    )</code></pre>
+
+                <p>That needs a schema change too — the
+                <code>CHECK (type IN ('deposit', 'withdrawal'))</code> constraint would
+                reject it, which is the database correctly refusing a transaction type it
+                has never heard of.</p>
+
+                <h2>The test I should have had</h2>
+
+                <p>The satisfying version of this story ends with a test that would have
+                caught it:</p>
+
+                <pre><code>def test_ledger_explains_every_balance(conn):
+                    """No account may hold money the ledger cannot account for."""
+                    for account in load_accounts(conn).values():
+                        ledger_total = sum(
+                            t.amount if t.type == "deposit" else -t.amount
+                            for t in account.transactions
+                        )
+                        assert ledger_total == account.balance</code></pre>
+
+                <p>That test is four lines and it asserts the entire integrity property of
+                the system. It would have failed the moment I migrated. I did not have it,
+                because I was thinking about the ledger as something to display rather than
+                something to verify.</p>
+
+                <p>That is the actual lesson, and it took an account of a fictional
+                supervillain holding fifty phantom dollars to teach me.</p>
+
+                <h2>What I changed</h2>
+
+                <ul>
+                    <li>Zeroed the orphaned balance, for now</li>
+                    <li>Documented it in the README under known limitations</li>
+                    <li>Added the opening-balance migration to my list of next steps</li>
+                </ul>
+
+                <p>I have gone back and forth on whether the honest thing is to fix it
+                properly before writing this. I decided it is more useful to publish the
+                version where I found it, understood it, and consciously deferred the real
+                fix — because that is what the week actually looked like.</p>
+
+            </article>
+
+            <p class="post-back prose"><a href="/blog/">&larr; All posts</a></p>
+
+        </main>
+
+        <footer class="site-footer">
+            <p>&copy; 2026 Dipen Modi</p>
+        </footer>
+
+    </body>
+</html>
