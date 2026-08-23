@@ -1,106 +1,106 @@
-/* Reset and base: wiping browser defaults */
-* {
-    box-sizing: border-box;
-    margin: 0;
-    padding: 0;
-}
+    /* Reset and base: wiping browser defaults */
+    * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+    }
 
-body {
-    font-family: system-ui, sans-serif; /* if not supported, fall back to sans-serif */
-    line-height: 1.6;   /* unitless meaning 1.6 times the font size */
-    color: #1a1a1a;
-    background: #ffffff;
-    font-size: 1.0625rem;   /* 17px */
-}
+    body {
+        font-family: system-ui, sans-serif; /* if not supported, fall back to sans-serif */
+        line-height: 1.6;   /* unitless meaning 1.6 times the font size */
+        color: #1a1a1a;
+        background: #ffffff;
+        font-size: 1.0625rem;   /* 17px */
+    }
 
-/* The Container: */
-.site-header,
-main,
-.site-footer {
-    max-width: 1100px;
-    margin-left: auto;
-    margin-right: auto;
-    padding-left: 32px;
-    padding-right: 32px;
-}
+    /* The Container: */
+    .site-header,
+    main,
+    .site-footer {
+        max-width: 1100px;
+        margin-left: auto;
+        margin-right: auto;
+        padding-left: 32px;
+        padding-right: 32px;
+    }
 
-/* Narrow: for reading */
-.prose {
-    max-width: 120ch;
-}
-
-
-.site-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding-top: 24px;
-    padding-bottom: 24px;
-}
-
-.wordmark{
-    text-decoration: none;
-    font-weight: 600;
-}
-
-main {
-    padding-top: 24px;
-    padding-bottom: 64px;
-}
-
-.site-footer {
-    padding-top: 24px;
-    padding-bottom: 48px;
-}
-
-.link-list {
-    list-style: none;
-}
-
-.link-list li {
-    margin-bottom: 4px;
-}
-
-/* Typography: */
-h1 {
-    font-size: 2.5rem;  /* rem = relative to the root font size (16px by default) */
-    line-height: 1.2;
-    margin-bottom: 16px;
-}
-
-h2 {
-    font-size: 1.25rem;
-    margin-bottom: 12px;
-}
-
-p {
-    margin-bottom: 16px;
-    /* Latex-like wrap: */
-    /* text-align: justify;
-    hyphens: auto;
-    */
-}
+    /* Narrow: for reading */
+    .prose {
+        max-width: 120ch;
+    }
 
 
-/* Links and nav: */
-a {
-    color: #1a1a1a;
-}
+    .site-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding-top: 24px;
+        padding-bottom: 24px;
+    }
 
-.site-nav a {
-    text-decoration: none;
-    margin-left: 24px;
-}
+    .wordmark{
+        text-decoration: none;
+        font-weight: 600;
+    }
 
-.site-nav a:hover {
-    text-decoration: underline;
-}
+    main {
+        padding-top: 24px;
+        padding-bottom: 64px;
+    }
+
+    .site-footer {
+        padding-top: 24px;
+        padding-bottom: 48px;
+    }
+
+    .link-list {
+        list-style: none;
+    }
+
+    .link-list li {
+        margin-bottom: 4px;
+    }
+
+    /* Typography: */
+    h1 {
+        font-size: 2.5rem;  /* rem = relative to the root font size (16px by default) */
+        line-height: 1.2;
+        margin-bottom: 16px;
+    }
+
+    h2 {
+        font-size: 1.25rem;
+        margin-bottom: 12px;
+    }
+
+    p {
+        margin-bottom: 16px;
+        /* Latex-like wrap: */
+        /* text-align: justify;
+        hyphens: auto;
+        */
+    }
 
 
-/* Spacing between Sections: */
-main section {
-    margin-bottom: 48px;
-}
+    /* Links and nav: */
+    a {
+        color: #1a1a1a;
+    }
+
+    .site-nav a {
+        text-decoration: none;
+        margin-left: 24px;
+    }
+
+    .site-nav a:hover {
+        text-decoration: underline;
+    }
+
+
+    /* Spacing between Sections: */
+    main section {
+        margin-bottom: 48px;
+    }
 
 
 /* Responsive: phones & small screens
@@ -145,6 +145,34 @@ main section {
     }
 }
 
+    /* Projects */
+    .project-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+        gap: 24px;
+    }
 
+    .project-card {
+        border: 1px solid #e5e5e5;
+        border-radius: 8px;
+        padding: 24px;
+    }
 
+    .project-card h2 {
+        margin-bottom: 4px;
+    }
+
+    .project-stack {
+        font-size: 0.875rem;
+        color: #666;
+        margin-bottom: 16px;
+    }
+
+    .project-links {
+        margin-bottom: 0;
+    }
+
+    .project-links a {
+        margin-right: 16px;
+    }
 
