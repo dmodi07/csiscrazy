@@ -268,3 +268,45 @@
         margin-bottom: 20px;
         padding-left: 24px;
     }
+
+
+
+/*  Contact Form  */
+    .contact-form label {
+        display: block;
+        margin-bottom: 4px;
+        font-size: 0.9375rem;
+    }
+
+    .contact-form input[type="text"],
+    .contact-form input[type="email"],
+    .contact-form textarea {
+        display: block;
+        width: 100%;
+        max-width: 480px;
+        padding: 10px 12px;
+        margin-bottom: 20px;
+        border: 1px solid #ccc;
+        border-radius: 6px;
+        font-family: inherit; /* without inherit, */
+        font-size: 1rem;
+    }
+
+    .contact-form textarea{
+        resize: vertical;
+    }
+
+    .contact-form button {
+        padding: 10px 24px;
+        border: none;
+        border-radius: 6px;
+        background: #1a1a1a;
+        color: #fff;
+        font-family: inherit;
+        font-size: 1rem;
+        cursor: pointer;
+    }
+
+    .contact-form button:hover {
+        background: #444;
+    }

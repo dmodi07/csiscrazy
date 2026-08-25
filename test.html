@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <title>API test</title>
+    </head>
+    <body>
+
+        <button id="checkButton">Check API</button>
+        <p id="output">Not checked yet.</p>
+
+        <script>
+            const button = document.querySelector("#checkButton");
+            const output = document.querySelector("#output");
+
+            button.addEventListener("click", async function () {
+                output.textContent = "Checking...";
+
+                try {
+                    const response = await fetch("https://bank-of-evil.onrender.com/health");
+                    const data = await response.json();
+                    output.textContent = "API says: " + data.status;
+                } catch (error) {
+                    output.textContent = "Could not reach the API.";
+                }
+            });
+        </script>
+
+    </body>
+</html>
