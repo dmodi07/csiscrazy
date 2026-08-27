@@ -17,13 +17,32 @@
                 output.textContent = "Checking...";
 
                 try {
-                    const response = await fetch("https://bank-of-evil.onrender.com/health");
+                    const response = await fetch("https://bank-of-evil.onrender.com/accounts/grufru/balance");
                     const data = await response.json();
-                    output.textContent = "API says: " + data.status;
+                    console.log(data)
+                    output.textContent = "Can" + (data.balance_cents/100).toFixed(2);
                 } catch (error) {
                     output.textContent = "Could not reach the API.";
                 }
             });
+        </script>
+
+        <h1>Bank</h1>
+        <p class="bal">$0</p>
+        <p class="bal">$100</p>
+        <input id="user" placeholder="type here">
+        <p id="a"></p>
+        <p id="b"></p>
+        <ul id="list"></ul>
+        <script>
+            const list = document.querySelector("#list");
+            const item = document.createElement("li");
+            item.textContent = "first row";
+            list.appendChild(item);
+
+            const ghost = document.createElement("lim");
+            ghost.textContent = "not attached yet";
+            list.appendChild(ghost);
         </script>
 
     </body>

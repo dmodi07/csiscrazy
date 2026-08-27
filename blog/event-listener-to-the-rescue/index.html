@@ -1,0 +1,158 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Beyond the Script: Event Listener to the Rescue</title>
+        <meta name="description" content="Beyond the Script: Event Listener to the Rescue">
+        <link rel="stylesheet" href="/styles.css">
+    </head>
+
+    <body>
+        <header class="site-header">
+            <a class="wordmark" href="/">Dipen Modi</a>
+            <nav class="site-nav">
+                <a href="/">Blog</a>
+                <a href="/about/">About</a>
+                <a href="/projects/">Projects</a>
+                <a href="/contact/">Contact</a>
+            </nav>
+        </header>
+
+        <main>
+            <article class="post prose">
+                <header class="post-header">
+                    <p class="post-date"><time datetime="2026-08-29">29 August 2026</time></p>
+                    <h1>Beyond the Script: Event Listener to the Rescue</h1>
+                </header>
+
+                <h2>From Execution to Expectation: The Mindset Shift of Web Programming</h2>
+
+                <p>When learning languages like C or Python, our mental model of programming is shaped by a predictable linear structure: execution enters <code>main()</code>, steps through instructions top to bottom, performs work, and terminates. The program's lifecycle is finite, tightly controlled, and self-contained.</p>
+
+                <p>When transitioning to web development, this top-to-bottom mental model immediately collides with a fundamental design conflict.</p>
+
+                <h2>The Problem: The Inflexibility of Linear Execution</h2>
+
+                <p>Imagine designing a web application—a simple interactive form—using a traditional script execution model. You need to calculate a result when the user clicks a "Submit" button.</p>
+
+                <p>If your script executes top to bottom and immediately exits, it finishes running within milliseconds of the page loading. By the time the user moves their mouse toward the button five seconds later, the script is long dead.</p>
+
+                <p>How do you handle an interaction that occurs asynchronously in the future?</p>
+
+                <p>A programmer stuck in the sequential mindset might attempt to force the script to wait using a traditional polling loop:</p>
+
+                <pre><code>// Naive approach: Polling for a click in a synchronous loop
+                while (!buttonHasBeenClicked()) {
+                    // Keep checking...
+                }
+                doSomething();</code></pre>
+
+                <p>In a single-threaded environment like the browser's JavaScript engine, this approach is disastrous. A synchronous <code>while</code> loop completely blocks the main thread. The browser cannot repaint the screen, render CSS, or process OS inputs. The entire tab freezes, resulting in an unresponsive browser window.</p>
+
+                <p>Linear execution forces a rigid dilemma: either your program finishes before the user acts, or it locks up the system waiting for them.</p>
+
+                <hr style="border: 0; height: 1px; background: #eaeaea; margin: 2rem 0;">
+
+                <h2>The Solution: Asynchronous Delegation via <code>addEventListener</code></h2>
+
+                <p>To solve this, web architecture flips the execution paradigm on its head. Instead of writing code that <em>executes work immediately</em>, you write code that <em>sets up expectations</em>.</p>
+
+                <p>Rather than running an active loop to monitor state, JavaScript delegates the waiting to the browser's underlying C++ APIs and system event queues. This is where <code>addEventListener</code> comes to the rescue.</p>
+
+                <pre><code>// The Event-Driven approach: Setting an expectation
+                const submitButton = document.querySelector('#submit-btn');
+
+                function handleSubmit(event) {
+                    console.log("Button clicked! Processing data...");
+                }
+
+                // Register the listener and immediately move on
+                submitButton.addEventListener('click', handleSubmit);</code></pre>
+
+                <p>When this script runs, it executes top to bottom in a fraction of a millisecond. It queries the DOM, registers the <code>handleSubmit</code> function as a callback for the <code>'click'</code> event on <code>submitButton</code>, and exits the execution context entirely.</p>
+
+                <p>The script is over. Yet, the page stays alive.</p>
+
+                <pre class="diagram">
+                +-----------------------------------------------------------------+
+                |                      Initial Execution                          |
+                |  1. Query DOM -&gt; 2. Register addEventListener -&gt; 3. Script Exits |
+                +-----------------------------------------------------------------+
+                                                 |
+                                                 v
+                +-----------------------------------------------------------------+
+                |                       The Waiting State                         |
+                |   Browser idle / User interacting / Main Thread free for rendering |
+                +-----------------------------------------------------------------+
+                                                 |
+                                     [ User Clicks Button ]
+                                                 |
+                                                 v
+                +-----------------------------------------------------------------+
+                |                       Event Triggered                           |
+                |   Browser detects OS click -&gt; Pushes handleSubmit to Event Queue |
+                +-----------------------------------------------------------------+
+                </pre>
+
+                <p>Behind the scenes, the browser maintains a table of registered event listeners. When the physical click occurs, the browser intercepts the operating system input event, matches it to the DOM node target, and pushes the registered callback function onto the <strong>Event Queue</strong>.</p>
+
+                <p>The JavaScript <strong>Event Loop</strong> then picks up this function and executes it.</p>
+
+                <hr style="border: 0; height: 1px; background: #eaeaea; margin: 2rem 0;">
+
+                <h2>The Paradigm Shift</h2>
+
+                <p>Using <code>addEventListener</code> requires a fundamentally different way of thinking about control flow:</p>
+
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Traditional Scripting (C / Python)</th>
+                            <th>Event-Driven Web (JavaScript)</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Program drives the timeline</td>
+                            <td>User drives the timeline</td>
+                        </tr>
+                        <tr>
+                            <td>Code executes sequentially to completion</td>
+                            <td>Code registers callbacks and yields control</td>
+                        </tr>
+                        <tr>
+                            <td>CPU waits during blocking IO operations</td>
+                            <td>Non-blocking; main thread remains free for rendering</td>
+                        </tr>
+                        <tr>
+                            <td>Program state is transient during execution</td>
+                            <td>State persists in DOM memory while waiting for events</td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <p>Transitioning to web architecture means letting go of the need to control the timeline of execution. Instead of authoring a rigid sequence of instructions, your job as a web developer is to design a reactive environment—building silent, dormant listeners that wake up precisely when needed.</p>
+            </article>
+
+            <p class="post-back prose"><a href="/">&larr; All posts</a></p>
+
+            <section class="comments prose">
+                <h2>Comments</h2>
+                <div id="cusdis_thread"
+                     data-host="https://cusdis.com"
+                     data-app-id="50fb5ecd-9772-4ba8-9a48-13efbc138d28"
+                     data-page-id="Event-Listener-to-the-Rescue"
+                     data-page-url="https://csiscrazy.com/blog/Event-Listener-to-the-Rescue/"
+                     data-page-title="Beyond-the-Script:-Event-Listener-to-the-Rescue.">
+                </div>
+                <script async defer src="https://cusdis.com/js/cusdis.es.js"></script>
+            </section>
+        </main>
+
+        <footer class="site-footer">
+            <p>&copy; 2026 Dipen Modi</p>
+        </footer>
+
+    </body>
+</html>

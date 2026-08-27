@@ -1,0 +1,67 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>I found out why innerHTML is dangerous.</title>
+        <meta name="description" content="The security risk of innerHTML in Web Development.">
+        <link rel="stylesheet" href="/styles.css">
+    </head>
+
+    <body>
+        <header class="site-header">
+            <a class="wordmark" href="/">Dipen Modi</a>
+            <nav class="site-nav">
+                <a href="/">Blog</a>
+                <a href="/about/">About</a>
+                <a href="/projects/">Projects</a>
+                <a href="/contact/">Contact</a>
+            </nav>
+        </header>
+
+        <main>
+            <article class="post prose">
+                <header class="post-header">
+                    <p class="post-date"><time datetime="2026-08-27">27 August 2026</time></p>
+                    <h1>I found out why innerHTML is dangerous.</h1>
+                </header>
+
+                <p>When we first learn JavaScript, the <code>innerHTML</code> property seems like the ultimate tool. It provides a highly convenient way to dynamically update the Document Object Model (DOM) by assigning a string of HTML directly to an element. However, as we transition from basic scripts to production-level applications, we quickly learn that using <code>innerHTML</code> introduces a critical security vulnerability: Cross-Site Scripting (XSS).</p>
+
+                <p>The fundamental flaw of <code>innerHTML</code> lies in how the browser parses the data. When you pass a string to this property, the browser's HTML parser completely processes it, converting any HTML tags into actual DOM nodes. If that string contains unsanitized user input—such as a comment on a blog or a profile name—a malicious actor can easily inject executable code into the application.</p>
+
+                <p>For example, a standard script injection might look like this:</p>
+
+                <pre><code>const userComment = "&lt;img src='missing.jpg' onerror='stealCookies()'&gt;";
+                document.getElementById('comments-section').innerHTML = userComment;</code></pre>
+
+                <p>Because <code>innerHTML</code> parses the <code>&lt;img&gt;</code> tag, the browser will attempt to load the broken image, trigger the <code>onerror</code> event handler, and silently execute the attacker's <code>stealCookies()</code> function. This is known as a DOM-based XSS attack. Once an attacker can run arbitrary JavaScript in the victim's browser, they can hijack session tokens, perform unauthorized API requests, or completely deface the application interface.</p>
+
+                <p>To mitigate this risk, modern web development best practices dictate that we should avoid <code>innerHTML</code> whenever handling dynamic user data. If we only need to update the text of an element, we should always use the <code>textContent</code> property instead. Unlike <code>innerHTML</code>, <code>textContent</code> treats all input as raw text and automatically encodes special characters, rendering any injected <code>&lt;script&gt;</code> tags completely harmless.</p>
+
+                <p>If an assignment or project absolutely requires us to render raw HTML strings from a database, we must sanitize the input first. We can accomplish this by using established sanitization libraries, such as DOMPurify, which systematically strip out dangerous attributes and tags before they ever reach the DOM. Alternatively, constructing the DOM manually using <code>document.createElement()</code> and <code>Node.appendChild()</code> ensures that data is treated safely as node text rather than executable markup.</p>
+
+                <p>Ultimately, while <code>innerHTML</code> is an easy shortcut for beginners, it is simply not worth the security trade-off. Writing secure code requires us to default to safer alternatives like <code>textContent</code> to ensure our applications remain resilient against XSS attacks.</p>
+            </article>
+
+            <p class="post-back prose"><a href="/">&larr; All posts</a></p>
+
+            <section class="comments prose">
+                <h2>Comments</h2>
+                <div id="cusdis_thread"
+                     data-host="https://cusdis.com"
+                     data-app-id="50fb5ecd-9772-4ba8-9a48-13efbc138d28"
+                     data-page-id="I-found-out-why-innerHTML-is-dangerous."
+                     data-page-url="https://csiscrazy.com/blog/I-found-out-why-innerHTML-is-dangerous/"
+                     data-page-title="I-found-out-why-innerHTML-is-dangerous.">
+                </div>
+                <script async defer src="https://cusdis.com/js/cusdis.es.js"></script>
+            </section>
+        </main>
+
+        <footer class="site-footer">
+            <p>&copy; 2026 Dipen Modi</p>
+        </footer>
+
+    </body>
+</html>
