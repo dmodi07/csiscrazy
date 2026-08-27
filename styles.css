@@ -269,7 +269,21 @@
         padding-left: 24px;
     }
 
+    .comments {
+        margin-top: 56px;
+        padding-top: 32px;
+        border-top: 1px solid #e5e5e5;
+    }
 
+    .comments h2 {
+        font-size: 1.25rem;
+        margin-bottom: 20px;
+    }
+
+    #cusdis_thread iframe {
+        width: 100% !important;
+        border: none;
+    }
 
 
 
