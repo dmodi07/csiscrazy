@@ -1,0 +1,114 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>One hyphen broke my contact form</title>
+        <meta name="description" content="I audited my own site and found a contact form that couldn't send, a page with no ending, and links to nowhere. Browsers forgave all of it. That was the problem.">
+        <link rel="stylesheet" href="/styles.css">
+    </head>
+
+    <body>
+        <header class="site-header">
+            <a class="wordmark" href="/">Dipen Modi</a>
+            <nav class="site-nav">
+                <a href="/">Blog</a>
+                <a href="/about/">About</a>
+                <a href="/projects/">Projects</a>
+                <a href="/contact/">Contact</a>
+            </nav>
+        </header>
+
+        <main>
+            <article class="post prose">
+                <header class="post-header">
+                    <p class="post-date"><time datetime="2026-10-07">7 October 2026</time></p>
+                    <h1>One hyphen broke my contact form</h1>
+                </header>
+
+                <p>This site has a contact page. It has a form with a name field, an email field, a message box, and a Send button. It looks finished. Every time I opened it, it rendered perfectly.</p>
+
+                <p>It probably never sent a single message.</p>
+
+                <h2>What I did</h2>
+
+                <p>I didn't go looking for that bug specifically. I sat down to do something I had never done for this site: read every page as if someone else had written it, and check it against something other than my eyes. I went file by file, and I ran a small script that walked each HTML file and reported three things: tags that were opened but never closed, duplicate <code>id</code>s, and internal links that pointed at files that don't exist.</p>
+
+                <p>Here's what came back:</p>
+
+                <ul>
+                    <li><strong>The contact form's key field was misnamed.</strong> The form posts to Web3Forms, which identifies my account through a hidden field called <code>access_key</code>. Mine was called <code>access-key</code>. Hyphen, not underscore.</li>
+                    <li><strong>The contact page had no ending.</strong> The file just stopped after <code>&lt;/main&gt;</code>. No footer, no <code>&lt;/body&gt;</code>, no <code>&lt;/html&gt;</code>.</li>
+                    <li><strong>The contact page thought it was a blog post.</strong> Its <code>&lt;title&gt;</code> was "My database had money that no transaction created" and its description was "32 passing tests and a crash on day one." Two different posts, pasted into one page that is neither.</li>
+                    <li><strong>A "Writeup" link on my Projects page went to <code>/blog/</code></strong>, a folder that has no index page. A 404, one click from the project I most want people to read about.</li>
+                    <li><strong>The homepage listed posts out of date order</strong>, and one post link was missing its trailing slash while every other link had one.</li>
+                </ul>
+
+                <p>None of these produced an error. Not one. That is the whole story, really, but it's worth unpacking why.</p>
+
+                <h2>Why none of it looked broken</h2>
+
+                <p>Browsers are built to be forgiving. If an HTML file ends without closing <code>&lt;body&gt;</code> and <code>&lt;html&gt;</code>, the parser closes them for you. You don't get a warning in the page and you don't get one in the console. The page renders, minus a footer you might not notice is missing.</p>
+
+                <p>A form is forgiving in a different way: it doesn't know what the server wants. To the browser, <code>access-key</code> and <code>access_key</code> are equally valid names. It sends whatever you give it. The only part of the system that knows the name is wrong is the server on the other end, and the only time it can tell you is after someone presses Send. I had never pressed Send.</p>
+
+                <p>And a <code>&lt;title&gt;</code> lives in the browser tab, the one part of a page I never look at while I'm building it.</p>
+
+                <p>So I had three different kinds of failure, and they shared one property: <em>the page looked right</em>. My entire testing process was "open it and look at it." That process is blind to exactly these bugs.</p>
+
+                <h2>Where they came from</h2>
+
+                <p>Every one of them is a copy-paste fossil. When I need a new page, I duplicate an existing one and change the parts I'm thinking about. On the contact page, I was thinking about the form. I wasn't thinking about the <code>&lt;head&gt;</code>, so it kept the title of whatever post I copied it from. When I was cutting out the article body to make room for the form, I cut a little too far and took the footer and closing tags with it.</p>
+
+                <p>The <code>access-key</code> hyphen is a guess, but a reasonable one: HTML attributes are full of hyphens (<code>data-page-id</code>, <code>aria-label</code>, <code>http-equiv</code>), and my fingers have learned that pattern. Web3Forms uses an underscore. Nothing stopped my habit from winning.</p>
+
+                <h2>The fix</h2>
+
+                <p>The form fix was one character:</p>
+
+                <pre><code>&lt;!-- before --&gt;
+&lt;input type="hidden" name="access-key" value="..."&gt;
+
+&lt;!-- after --&gt;
+&lt;input type="hidden" name="access_key" value="..."&gt;</code></pre>
+
+                <p>The contact page got a real title and description, and its footer and closing tags back. The remaining items, the dead Writeup link, the post order, and the slash, are next on the list.</p>
+
+                <p>But the one-character fix isn't the interesting part. The bug was cheap to fix and expensive to have, because for as long as it was live, anyone who used that form would have filled it out, pressed Send, and been told it failed, or worse, assumed it worked and waited for a reply that was never coming. A broken contact form doesn't just fail; it fails <em>at the exact moment someone was reaching out</em>.</p>
+
+                <h2>What I learned</h2>
+
+                <p><strong>"It renders" is not a test.</strong> In my bank API project I learned that <a href="/blog/32-passing-tests/">a green test suite can sit on top of a crash</a>. This is the front-end version of the same lesson: a page that looks finished can still be broken in every way that matters. Looking at a page checks the layout. It doesn't check the parts you can't see, and it can't check anything that happens after a click.</p>
+
+                <p><strong>Forgiving systems hide bugs instead of preventing them.</strong> I used to think of HTML's leniency as friendly. It is, for getting started. But it means mistakes don't announce themselves; they accumulate quietly. When the tool won't complain, you need something that will. For me now, that's a small checker script and the W3C validator.</p>
+
+                <p><strong>Test the whole path, including the part you don't own.</strong> My form's real job isn't to display; it's to deliver a message to my inbox. The only test that proves that is sending one. Every form I add from now on gets one real submission before I call it done.</p>
+
+                <p><strong>When you copy a page, the parts you aren't thinking about come along too.</strong> The <code>&lt;head&gt;</code> is the easiest place for stale content to hide, because it never shows up on the screen. When I duplicate a page now, I edit the <code>&lt;title&gt;</code> and description first, before I touch anything else.</p>
+
+                <p>The audit took less than an hour. I'd been running the site for weeks without one. I'm adding it to the routine: every few posts, read the site like a stranger, and run the checks that don't depend on my eyes.</p>
+
+                <p>And if you tried to contact me before today and never heard back: it wasn't you. Please try again.</p>
+            </article>
+
+            <p class="post-back prose"><a href="/">&larr; All posts</a></p>
+
+            <section class="comments prose">
+                <h2>Comments</h2>
+                <div id="cusdis_thread"
+                     data-host="https://cusdis.com"
+                     data-app-id="50fb5ecd-9772-4ba8-9a48-13efbc138d28"
+                     data-page-id="one-hyphen-broke-my-contact-form"
+                     data-page-url="https://csiscrazy.com/blog/one-hyphen-broke-my-contact-form/"
+                     data-page-title="One hyphen broke my contact form">
+                </div>
+                <script async defer src="https://cusdis.com/js/cusdis.es.js"></script>
+            </section>
+        </main>
+
+        <footer class="site-footer">
+            <p>&copy; 2026 Dipen Modi</p>
+        </footer>
+
+    </body>
+</html>

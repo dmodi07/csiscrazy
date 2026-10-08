@@ -210,6 +210,23 @@
 
 
 /*  Post pages  */
+    /* ~70 characters per line is the comfortable reading width */
+    .post,
+    .post-back,
+    .comments {
+        max-width: 70ch;
+    }
+
+    .post p,
+    .post li {
+        text-align: left;   /* override the mobile justify: no uneven gaps in articles */
+        hyphens: manual;
+    }
+
+    .post li {
+        margin-bottom: 10px;
+    }
+
     .post-header {
         margin-bottom: 32px;
     }
@@ -231,7 +248,7 @@
     }
 
     .post code {
-        font-family: ui-monospace, "SF Mono", Menlo, menospace;
+        font-family: ui-monospace, "SF Mono", Menlo, monospace;
     }
 
     .post :not(pre) > code {
