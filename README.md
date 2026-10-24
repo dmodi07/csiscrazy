@@ -9,5 +9,5 @@ Deployed on Vercel.
 Open `index.html` in a browser. That's it.
 
 
-  Copyright (c) 2026 Dipen Modi. All rights reserved.
+  Copyright (c) 2026 Dipen Modi. All rights reserved. <br>
   No permission is granted to copy, modify, or redistribute this code or content without written permission.
